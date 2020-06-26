@@ -1,18 +1,13 @@
-
+#Import the file
 normalizePath(path, winslash = "/", mustWork = NA)
-
 path <- "C:/Users/Evgeniya Shtyrkova/Documents/MEGA/PhD Thesis/Data/dataset2_v4.dta"
-
 dataset2 <- read.dta13(path, nonint.factors = T, generate.factors = T, convert.factors = T, convert.underscore = T)
-
-
 glimpse(dataset2)
-
 dataset2 <- as_tibble(dataset2)
-save(dataset2, file = "dataset2.R")
+save(dataset2, file = "dataset2.csv") #that's where I had the error! Save it as csv.
 
 
-##save as factor
+##save variables as factor
 dataset2 <- dataset2 %>%
     mutate(year = as.factor(year), party.fam = as.factor(party.fam), country = as.factor(country), niche = as.factor(niche),
            dims = as.factor(dims), Iss.topic = as.factor(Iss.topic))
@@ -26,9 +21,9 @@ str(dataset2)
 
 dataset2 <- dataset2 %>%
   mutate(lrpos = as.numeric(lrpos), lrpos.10 = as.numeric(lrpos.10))
+glimpse(dataset2)
 
-save(dataset2, file = "dataset2.R")
-
+save(dataset2, file = "dataset2.csv")
 
 ### plots ###
 table <- dataset2 %>%

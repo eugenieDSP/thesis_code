@@ -1,17 +1,9 @@
  ###Graphs for descriptives and bivariates
 
-grouped.ds2 <- ds_2 %>%
-  group_by(country, dims)
-
 ##plot colors
-cbp1 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
-          "#ff4500", "#0072B2", "#b22222", "#CC79A7",
-          "#293352", "#8ff173", "#8f6787", "#F0E442",
-          "#ff7373")
-colors <- c("#800080", "#ffa500", "#40e0d0", "#ffd700",
-            "#ff4040", "#000080", "#0000ff", "#ffc0cb",
-            "#407294", "#ffff66", "#666666", "#bada55",
-            "#008000", "#cbcba9")
+plot.colors <- c("#a39193", "#c39a9d", "#eea990", "#f6e0b5",
+                 "#91a3a1", "#c3ac9a", "#90d5ee", "#90eea9",
+                 "#b5cbf6", "#b5f6e0", "#b1a7b2", "#DDA2D4")
 
 ##Niche
 niche.ds2 <- grouped.ds2 %>%
@@ -93,17 +85,37 @@ ggplot(dataset2, aes(lrecon, galtan, color = country)) +
 
 #Image dimensions by parties
 #create a table with absolute frequencies
-abs.dims <- df.dataset2 %>%
+abs.dims <- dataset2 %>%
   dplyr::select(country, party, dims) %>%
   group_by(country, party, dims) %>%
   summarize(N = n())
 
 sum.dims <- abs.dims %>%
   group_by(country, party) %>%
-  summarise(sum = sum(N))
+  summarise(nsum = sum(N)) %>%
+  mutate(prop = as.character(nsum/sum(nsum)*100))
 
+#Overall plot, absolute frequencies
 ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims, label = N)) +
   geom_bar(stat = "identity") +
   facet_wrap(.~country, scales = "free") +
-  geom_text(size = 2, position = position_stack(vjust = 0.5))+
-  geom_text(aes(party, sum, label = sum, fill = NULL), data = sum.dims, vjust = -0.9, size = 3)
+  geom_text(size = 3, position = position_stack(vjust = 0.6))+
+  geom_text(aes(party, sum, label = sum, fill = NULL), data = sum.dims, vjust = -0.9, size = 5) +
+  theme_pubclean() +
+  scale_fill_manual(values = plot.colors, name = "Dimension") +
+  labs(title = "Number of images per dimension, by party and country; absolute frequencies",
+       x = "Party",
+       y = "N of images",
+       caption = "N: 14463")
+
+#Overall plot, relative (%) frequencies
+ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims)) +
+  geom_bar(stat = "identity", position = "fill") +
+  facet_wrap(.~country, scales = "free") +
+  theme_pubclean() +
+  scale_fill_manual(values = plot.colors, name = "Dimension") +
+  scale_y_continuous(label=percent_format()) +
+  labs(title = "Number of images per dimension, by party and country; absolute frequencies",
+       x = "Party",
+       y = "% of images",
+       caption = "N: 14463")
