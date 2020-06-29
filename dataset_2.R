@@ -4,7 +4,7 @@ path <- "C:/Users/Evgeniya Shtyrkova/Documents/MEGA/PhD Thesis/Data/dataset2_v4.
 dataset2 <- read.dta13(path, nonint.factors = T, generate.factors = T, convert.factors = T, convert.underscore = T)
 glimpse(dataset2)
 dataset2 <- as_tibble(dataset2)
-save(dataset2, file = "dataset2.csv") #that's where I had the error! Save it as csv.
+save(dataset2, file = "dataset2.RData") #that's where I had the error! Save it as csv.
 
 
 ##save variables as factor
@@ -23,7 +23,11 @@ dataset2 <- dataset2 %>%
   mutate(lrpos = as.numeric(lrpos), lrpos.10 = as.numeric(lrpos.10))
 glimpse(dataset2)
 
-save(dataset2, file = "dataset2.csv")
+#Incumbency level
+levels(dataset2$incumb)
+dataset2$incumb <- factor(dataset2$incumb,
+                          levels = c(0, 1),
+                          labels = c("Not incumbent", "Incumbent"))
 
 ### plots ###
 table <- dataset2 %>%
@@ -36,57 +40,90 @@ ggplot(table, aes(y=n, x=party.fam, fill = dims)) +
   facet_wrap(.~country, scales = "free") +
   theme(axis.text.x = element_text(size = 10, angle = 45, hjust = 1))
 
-
-##Adding weights###
-
+dfds2 <- as.data.frame(dataset2)
 
 ##Regression analysis##
-model_ds2 <- multinom(dims ~ niche + incumb + stdlrpos + stdsize +stdlrpos*stdsize + stdperso + stdfragm +year.trend + country,
-                      data = dataset2,
-                      margins = T)
+model_ds2 <- multinom(dims ~ niche + incumb + stdlrpos + stdsize + stdperso + stdfragm + year.trend + country,
+                      data = dataset2)
 tidied_multinom <- tidy(model_ds2)
 tidied_multinom
-summary(model_ds2)
-
-model_ds3 <- multinom(dims ~ niche + incumb + stdlrpos + stdsize + stdperso + stdfragm +year.trend + country,
-                      data = dataset2,
-                      margins = T)
-tidied_multinom <- tidy(model_ds3)
-tidied_multinom
-summary(model_ds3)
-plotreg(model_ds3)
-
-model.pf <- multinom(dims ~ party.fam,
-                     data = dataset2,
-                     margins = T)
+aug_mn <- augment(model_ds2)
+summary(model_ds2) # better model
+str(model_ds2)
 
 screenreg(model_ds2)
 plotreg(model_ds2)
-plotreg(model.pf)
+class(plot_reg2)
+str(plot_reg2)# ggplot class so it can be altered as a ggplot
 
-niche_p2 <- ggpredict(model_ds2, terms = "niche")
-plot(niche_p2, connect.lines = T, )
+
+## Cleaner plots ##
+# 2nd dimension
+
+
+niche_p2 <- ggpredict(model_ds2, terms = "niche", ci.lvl = 0.95)
+plot_niche <- plot(niche_p2) +
+  geom_line(alpha = 0.5, size = 1) +
+  labs(x = NULL, y = NULL,
+    title = "Predicted probabilites of image dimensions",
+    subtitle = "Niche/ mainstream status") +
+  theme_pubclean()
 
 incumb_p2 <- ggpredict(model_ds2, terms = "incumb")
-plot_incumb <- plot(incumb_p2, connect.lines = T, use.theme = T)
+plot_incumb <- plot(incumb_p2) +
+                  geom_line(alpha = 0.5, size = 1.2) +
+                  labs(x = NULL, y = NULL,
+                  title = "Predicted probabilites of image dimensions",
+                  subtitle = "Incumbent status") +
+                  theme_pubclean()
 
 lrpos_p2 <- ggpredict(model_ds2, terms = "stdlrpos [all]")
-plot(lrpos_p2, connect.line = T)
+plot_lrpos <- plot(lrpos_p2) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilites of image dimensions",
+       subtitle = "Ideological position") +
+  theme_pubclean()
 
 year_p2 <- ggpredict(model_ds2, terms = "year.trend")
-plot(year_p2, connect.lines = T)
+yeat_plot <- plot(year_p2) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilites of image dimensions",
+       subtitle = "Electoral trend") +
+  theme_pubclean()
+
 
 cou_p2 <- ggpredict(model_ds2, terms = "country")
-plot(cou_p2, connect.lines = T) + labs(title = "Predicted probabilities of country effect")
+count_plot <- plot(cou_p2, connect.lines = T) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilities of image dimensions",
+       subtitle = "Country effect") +
+      theme_pubclean()
 
 size_p2 <- ggpredict(model_ds2, terms = "stdsize [all]")
-plot(size_p2, connect.line = T)
+size_plot <- plot(size_p2) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilites of image dimensions",
+       subtitle = "Party size") +
+  theme_pubclean()
+
 
 fragm_p2 <- ggpredict(model_ds2, terms = "stdfragm [all]")
-plot(fragm_p2, connect.line = T)
-
-pos <- ggpredict(model_ds2, terms = "stdlrpos [all]")
-plot(pos)
+fragm_plot <- plot(fragm_p2) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilites of image dimensions",
+       subtitle = "System fragmentation") +
+  theme_pubclean()
 
 perso_p <- ggpredict(model_ds2, terms = "stdperso [all]")
-plot(perso_p)
+perso_plot <- plot(perso_p) +
+  geom_line(alpha = 0.5, size = 1.2) +
+  labs(x = NULL, y = NULL,
+       title = "Predicted probabilites of image dimensions",
+       subtitle = "Party text personalization") +
+  theme_pubclean()
+
