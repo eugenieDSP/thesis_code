@@ -137,30 +137,68 @@ plotreg(model2, custom.title = "Negative binomial regression, image count",
 
 ##Marginplots
 
-incumb_p <- ggpredict(model2, terms = "incumb")
-plot_incumb <- plot(incumb_p, connect.lines = T, use.theme = T)
-class(plot_incumb)
-plot_incumb +
-  labs(x = "Incumbency status") +
-  scale_y_continuous(limits = c(0.2,0.6))
+incumb_p1 <- ggpredict(model2, terms = "incumb")
+plot_incumb1 <- plot(incumb_p1, connect.lines = T, use.theme = T)
+class(plot_incumb1)
+plot_incumb1 <- plot_incumb1 +
+  labs(x = "Incumbency status",
+       y = "Count",
+       subtitle = "Incumbency status") +
+  scale_y_continuous(limits = c(0,0.6))
 
 
-niche_p <- ggpredict(model2, terms = "niche")
-plot(niche_p, connect.lines = T, )
+niche_p1<- ggpredict(model2, terms = "niche")
+niche_plot1 <- plot(niche_p1, connect.lines = T) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  labs(x = "Status",
+       y = "Count",
+       title = "Predicted values of count",
+       subtitle = "Niche / mainstream status") +
+  theme_pubclean()
 
-pf_p <- ggpredict(model2, terms = "party.fam")
-plot(pf_p, connect.lines = T)
+str(pf_p1)
+pf_p1 <- ggeffect(model2, terms = "party.fam")
+pf_plot <- 
+  ggplot(pf_p1, aes(x = fct_reorder(x, predicted, .fun = "desc"), y = predicted)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  labs(x = "Party family",
+       y = "Count",
+       title = "Predicted values of count",
+       subtitle = "Party family") +
+  theme_pubclean()
+ 
+size_p1 <- ggpredict(model2, terms = "stdsize")
+size_plot1 <-
+  plot(size_p1, connect.lines = T) +
+    scale_x_continuous(limits = c(-2, 2)) +
+    scale_y_continuous(limits = c(0, 0.5)) +
+    labs(x = "Party size",
+       y = "Count",
+       title = "Predicted values of count",
+       subtitle = "Party size") +
+    theme_pubclean()
 
-size_p <- ggpredict(model2, terms = "stdsize")
-plot(size_p, connect.lines = T) +
-    scale_x_continuous(limits = c(-2, 2))
-    scale_y_continuous(limits = c(0.2, 0.5)) +
-    theme(text = element_text(family = "Bookman"))
+lrpos_p1 <- ggpredict(model2, terms = "stdlrpos")
+lrpos_plot1 <- plot(lrpos_p1, connect.line = T) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  scale_x_continuous(limits = c(-1.5, 2)) +
+  labs(x = "Left-right position",
+       y = "Count",
+       title = "Predicted values of count",
+       subtitle = "Party ideological position") +
+  theme_pubclean()
+  
 
-lrpos_p <- ggpredict(model2, terms = "stdlrpos")
-plot(lrpos_p, connect.line = T)
+year_p1 <- ggpredict(model2, terms = "year.trend")
+year_plot1 <- plot(year_p1, connect.lines = T) +
+  scale_y_continuous(limits = c(0, 0.5)) +
+  labs(x = "Elections",
+       y = "Count",
+       title = "Predicted values of count",
+       subtitle = "Electoral trend") +
+  theme_pubclean()
 
-year_p <- ggpredict(model2, terms = "year.trend")
-plot(year_p, connect.lines = T)
 
 stargazer(model2, type = "html")

@@ -43,7 +43,7 @@ ggplot(table, aes(y=n, x=party.fam, fill = dims)) +
 dfds2 <- as.data.frame(dataset2)
 
 ##Regression analysis##
-model_ds2 <- multinom(dims ~ niche + incumb + stdlrpos + stdsize + stdperso + stdfragm + year.trend + country,
+model_ds2 <- multinom(dims ~ niche + incumb + stdlrpos + stdsize + stdsize*stdlrpos + stdperso + stdfragm + year.trend + country,
                       data = dataset2)
 tidied_multinom <- tidy(model_ds2)
 tidied_multinom
@@ -56,11 +56,28 @@ plotreg(model_ds2)
 class(plot_reg2)
 str(plot_reg2)# ggplot class so it can be altered as a ggplot
 
+extract(model_ds2)
 
 ## Cleaner plots ##
-# 2nd dimension
+
+plotreg_model <- plotreg(model_ds2, custom.title = "Multinomial logistical regression, image dimensions",
+                         custom.coef.names = c("Professional qualities: Intercept",
+                                              "2: Niche status", "2: Incumbency",
+                                              "2: Left-right position", "2:Party size", "2: Text personalization",
+                                              "2: System fragmentation","2: Electoral trend",
+                                              "2: Country (Germany)", "2: Position*size",
+                                              "Core political values: Intercept", "3: Niche status", "3: Incumbency",
+                                               "3: Left-right position", "3:Party size", "3: Text personalization",
+                                               "3: System fragmentation", "3: Electoral trend",
+                                              "3: Country (Germany)", "3: Position*size",
+                                               "Group representation: Intercept", "4: Niche status", "4: Incumbency",
+                                               "4: Left-right position", "4: Party size", "4: Text personalization",
+                                               "4: System fragmentation",
+                                               "4: Electoral trend", "4: Country (Germany)", "4: Position*size"),
+        use.se = T)
 
 
+str(model_plotreg)
 niche_p2 <- ggpredict(model_ds2, terms = "niche", ci.lvl = 0.95)
 plot_niche <- plot(niche_p2) +
   geom_line(alpha = 0.5, size = 1) +
@@ -68,6 +85,9 @@ plot_niche <- plot(niche_p2) +
     title = "Predicted probabilites of image dimensions",
     subtitle = "Niche/ mainstream status") +
   theme_pubclean()
+
+plot(ggeffect(model_ds2, terms = "incumb"))
+plot(ggemmeans(model_ds2, terms = "incumb"))
 
 incumb_p2 <- ggpredict(model_ds2, terms = "incumb")
 plot_incumb <- plot(incumb_p2) +
@@ -127,3 +147,10 @@ perso_plot <- plot(perso_p) +
        subtitle = "Party text personalization") +
   theme_pubclean()
 
+sizepos_p <- ggpredict(model_ds2, terms = "stdsize * stdlrpos [all]")
+inter_plot <- plot(sizepos_p) +
+  geom_line(alpha = 0.5, size = 1.2) +
+              labs(x = NULL, y = NULL,
+                   title = "Predicted probabilites of image dimensions",
+                   subtitle = "Party size / ideological position interaction") +
+              theme_pubclean()
