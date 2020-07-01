@@ -62,19 +62,19 @@ extract(model_ds2)
 
 plotreg_model <- plotreg(model_ds2, custom.title = "Multinomial logistical regression, image dimensions",
                          custom.coef.names = c("Professional qualities: Intercept",
-                                              "2: Niche status", "2: Incumbency",
-                                              "2: Left-right position", "2:Party size", "2: Text personalization",
-                                              "2: System fragmentation","2: Electoral trend",
-                                              "2: Country (Germany)", "2: Position*size",
-                                              "Core political values: Intercept", "3: Niche status", "3: Incumbency",
-                                               "3: Left-right position", "3:Party size", "3: Text personalization",
-                                               "3: System fragmentation", "3: Electoral trend",
-                                              "3: Country (Germany)", "3: Position*size",
-                                               "Group representation: Intercept", "4: Niche status", "4: Incumbency",
-                                               "4: Left-right position", "4: Party size", "4: Text personalization",
-                                               "4: System fragmentation",
-                                               "4: Electoral trend", "4: Country (Germany)", "4: Position*size"),
-        use.se = T)
+                                              "2.Niche status", "2.Incumbency",
+                                              "2.Left-right position", "2.Party size", "2.Text personalization",
+                                              "2.System fragmentation","2.Electoral trend",
+                                              "2.Country (Germany)", "2.Position*size",
+                                              "Core political values: Intercept", "3.Niche status", "3.Incumbency",
+                                               "3.Left-right position", "3.Party size", "3.Text personalization",
+                                               "3.System fragmentation", "3.Electoral trend",
+                                              "3.Country (Germany)", "3.Position*size",
+                                               "Group representation: Intercept", "4.Niche status", "4.Incumbency",
+                                               "4.Left-right position", "4.Party size", "4.Text personalization",
+                                               "4.System fragmentation",
+                                               "4.Electoral trend", "4.Country (Germany)", "4.Position*size"))
+
 
 
 str(model_plotreg)
@@ -84,18 +84,15 @@ plot_niche <- plot(niche_p2) +
   labs(x = NULL, y = NULL,
     title = "Predicted probabilites of image dimensions",
     subtitle = "Niche/ mainstream status") +
-  theme_pubclean()
-
-plot(ggeffect(model_ds2, terms = "incumb"))
-plot(ggemmeans(model_ds2, terms = "incumb"))
+  theme_bw()
 
 incumb_p2 <- ggpredict(model_ds2, terms = "incumb")
 plot_incumb <- plot(incumb_p2) +
                   geom_line(alpha = 0.5, size = 1.2) +
                   labs(x = NULL, y = NULL,
-                  title = "Predicted probabilites of image dimensions",
-                  subtitle = "Incumbent status") +
-                  theme_pubclean()
+                    title = "Predicted probabilites of image dimensions",
+                    subtitle = "Incumbent status") +
+                  theme_bw()
 
 lrpos_p2 <- ggpredict(model_ds2, terms = "stdlrpos [all]")
 plot_lrpos <- plot(lrpos_p2) +
@@ -103,7 +100,7 @@ plot_lrpos <- plot(lrpos_p2) +
   labs(x = NULL, y = NULL,
        title = "Predicted probabilites of image dimensions",
        subtitle = "Ideological position") +
-  theme_pubclean()
+  theme_bw()
 
 year_p2 <- ggpredict(model_ds2, terms = "year.trend")
 yeat_plot <- plot(year_p2) +
@@ -111,7 +108,7 @@ yeat_plot <- plot(year_p2) +
   labs(x = NULL, y = NULL,
        title = "Predicted probabilites of image dimensions",
        subtitle = "Electoral trend") +
-  theme_pubclean()
+  theme_bw()
 
 
 cou_p2 <- ggpredict(model_ds2, terms = "country")
@@ -120,7 +117,7 @@ count_plot <- plot(cou_p2, connect.lines = T) +
   labs(x = NULL, y = NULL,
        title = "Predicted probabilities of image dimensions",
        subtitle = "Country effect") +
-      theme_pubclean()
+  theme_bw()
 
 size_p2 <- ggpredict(model_ds2, terms = "stdsize [all]")
 size_plot <- plot(size_p2) +
@@ -128,7 +125,7 @@ size_plot <- plot(size_p2) +
   labs(x = NULL, y = NULL,
        title = "Predicted probabilites of image dimensions",
        subtitle = "Party size") +
-  theme_pubclean()
+  theme_bw()
 
 
 fragm_p2 <- ggpredict(model_ds2, terms = "stdfragm [all]")

@@ -126,13 +126,14 @@ tidied_model2 <- tidied_model %>%
 
 #Visualising the model
 screenreg(model2)
-plotreg(model2, custom.title = "Negative binomial regression, image count",
+plot.reg <- plotreg(model2, custom.title = "Negative binomial regression, image count",
                 custom.model.names = "Model",
-                custom.note = "Untransformed log-odds", omit.coef = "(Intercept)",
+                omit.coef = "(Intercept)",
                 custom.coef.names = c("Intercept", "Niche", "Incumbent", "Country: Germany",
-                              "2nd elections", "Social Democrats", "Green", "Liberal",
+                              "Electoral trend: 2nd elections", "Social Democrats", "Green", "Liberal",
                               "Christian Democrats","Radical right wing",
                               "System fragmentation", "Text personalization", "Party size", "Left-right position"))
+plot.reg <- plot.reg + labs(subtitle = "Untransfored log-odds")
 
 
 ##Marginplots
@@ -144,7 +145,8 @@ plot_incumb1 <- plot_incumb1 +
   labs(x = "Incumbency status",
        y = "Count",
        subtitle = "Incumbency status") +
-  scale_y_continuous(limits = c(0,0.6))
+  scale_y_continuous(limits = c(0,0.6)) +
+  theme_bw()
 
 
 niche_p1<- ggpredict(model2, terms = "niche")
@@ -154,7 +156,7 @@ niche_plot1 <- plot(niche_p1, connect.lines = T) +
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Niche / mainstream status") +
-  theme_pubclean()
+  theme_bw()
 
 str(pf_p1)
 pf_p1 <- ggeffect(model2, terms = "party.fam")
@@ -167,7 +169,7 @@ pf_plot <-
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Party family") +
-  theme_pubclean()
+  theme_bw()
  
 size_p1 <- ggpredict(model2, terms = "stdsize")
 size_plot1 <-
@@ -178,17 +180,17 @@ size_plot1 <-
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Party size") +
-    theme_pubclean()
+    theme_bw()
 
 lrpos_p1 <- ggpredict(model2, terms = "stdlrpos")
-lrpos_plot1 <- plot(lrpos_p1, connect.line = T) +
+lrpos_plot1 <- plot(lrpos_p1) +
   scale_y_continuous(limits = c(0, 0.5)) +
-  scale_x_continuous(limits = c(-1.5, 2)) +
+  scale_x_continuous(limits = c(-2, 2)) +
   labs(x = "Left-right position",
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Party ideological position") +
-  theme_pubclean()
+  theme_bw()
   
 
 year_p1 <- ggpredict(model2, terms = "year.trend")
@@ -198,7 +200,6 @@ year_plot1 <- plot(year_p1, connect.lines = T) +
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Electoral trend") +
-  theme_pubclean()
-
+  theme_bw()
 
 stargazer(model2, type = "html")

@@ -92,8 +92,7 @@ abs.dims <- dataset2 %>%
 
 sum.dims <- abs.dims %>%
   group_by(country, party) %>%
-  summarise(nsum = sum(N)) %>%
-  mutate(prop = as.character(nsum/sum(nsum)*100))
+  summarise(nsum = sum(N))
 
 #Overall plot, absolute frequencies
 ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims, label = N)) +
@@ -109,13 +108,23 @@ ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims, label = N)) +
        caption = "N: 14463")
 
 #Overall plot, relative (%) frequencies
-ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims)) +
+#Prepare the table
+merged.dims <- inner_join(abs.dims, sum.dims, by = "party") %>%
+  select(-country.y) %>%
+  mutate(prop = N/nsum*100) %>%
+  rename(country = country.x) %>%
+  arrange(country, party, dims, prop)
+ 
+merged.dims$prop<- round(merged.dims$prop, digits = 2)
+merged.dims <- merged.dims %>% mutate(prop = as.character(prop))
+
+ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)) +
   geom_bar(stat = "identity", position = "fill") +
   facet_wrap(.~country, scales = "free") +
-  theme_pubclean() +
+  geom_text(aes(label = paste0(prop, "%")), size = 3, position = position_fill(vjust = 0.5)) +
   scale_fill_manual(values = plot.colors, name = "Dimension") +
-  scale_y_continuous(label=percent_format()) +
-  labs(title = "Number of images per dimension, by party and country; absolute frequencies",
+  labs(title = "Number of images per dimension, by party and country; relative frequencies",
        x = "Party",
        y = "% of images",
-       caption = "N: 14463")
+       caption = "N: 14463") +
+  theme_bw()
