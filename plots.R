@@ -4,50 +4,92 @@
 plot.colors <- c("#a39193", "#c39a9d", "#eea990", "#f6e0b5",
                  "#91a3a1", "#c3ac9a", "#90d5ee", "#90eea9",
                  "#b5cbf6", "#b5f6e0", "#b1a7b2", "#DDA2D4")
+##Grouped data frame
+grouped.ds2 <- dataset2 %>%
+  group_by(country, party, dims)
 
-##Niche
+###Niche
 niche.ds2 <- grouped.ds2 %>%
+  dplyr::select(country, dims, niche) %>%
   group_by(country, dims, niche) %>%
   summarise(N = n()) %>%
   arrange(desc(niche, N))
 
-ggplot(niche.ds2, aes(niche, fill = reorder(dims, N))) +
+#Percentages df
+perc.niche <- niche.ds2 %>%
+  group_by(country, niche) %>%
+  summarise(nsum = sum(N))
+
+#Merging
+niche.m <- inner_join(niche.ds2, perc.niche, by = c("country", "niche")) %>%
+  mutate(prop = N/nsum*100) %>%
+  mutate(prop = as.character(round(prop, 2)))
+
+
+ggplot(niche.m, aes(niche, fill = reorder(dims, N), label = prop)) +
   geom_bar(aes(y = N), stat = "identity", position = "fill") +
+  geom_text(aes(y = N, label = paste0(prop, "%")), size = 3.5, position = position_fill(vjust = 0.5)) +
   facet_wrap(country~.,) +
   theme_light() +
-  scale_fill_manual(values = colors, name = "Image dimension") +
-  labs(title = "Images per niche/mainstream status, by country", x = "Status")
+  theme(legend.position = "top") +
+  scale_fill_manual(values = plot.colors, name = NULL) +
+  labs(title = "Images per niche/mainstream status, by country",
+       x = "Status")
 
 
-#Incumbent status
+###Incumbent status
 incumb.ds2 <- grouped.ds2 %>%
   mutate(incumb = as.factor(incumb)) %>%
   group_by(country, dims, incumb) %>%
   summarise(N = n()) %>%
   arrange(desc(incumb, N))
 
-incumb.ds2$incumb <- factor(incumb.ds2$incumb, levels = c("0", "1"), labels=c("Not incumbent", "Incumbent"))
+perc.incumb <- incumb.ds2 %>%
+  group_by(country, incumb) %>%
+  summarise(nsum = sum(N))
 
-ggplot(incumb.ds2, aes(incumb, fill = reorder(dims, N))) +
+#Merging
+incumb.m <- inner_join(incumb.ds2, perc.incumb, by = c("country", "incumb")) %>%
+  mutate(prop = N/nsum*100) %>%
+  mutate(prop = as.character(round(prop, 2)))
+
+ggplot(incumb.m, aes(incumb, fill = reorder(dims, N))) +
   geom_bar(aes(y = N), stat = "identity", position = "fill") +
+  geom_text(aes(y = N, label = paste0(prop, "%")), size = 3.5, position = position_fill(vjust = 0.5)) +
   facet_wrap(country~.,) +
   theme_light() +
-  scale_fill_manual(values = cbp1, name = "Image dimension") +
+  theme(legend.position = "top") +
+  scale_fill_manual(values = plot.colors, name = NULL) +
   labs(title = "Images per incumbent status, by country", x = "Status")
 
-#Party family - images
-pf.ds2 <- df.dataset2 %>%
-  group_by(country, year.trend, dims, party.fam) %>%
+
+###Party family - images
+pf.ds2 <- grouped.ds2 %>%
+  dplyr::select(country, dims, party.fam) %>%
+  group_by(country, dims, party.fam) %>%
   summarise(N = n()) %>%
   arrange(desc(party.fam, N))
 
-ggplot(pf.ds2, aes(party.fam, fill = reorder(dims, N))) +
+#Percentage df
+perc.pf <- pf.ds2 %>%
+  group_by(country, party.fam) %>%
+  summarise(nsum = sum(N))
+
+#Merging
+pf.m <- inner_join(pf.ds2, perc.pf, by = c("country", "party.fam")) %>%
+  mutate(prop = N/nsum*100) %>%
+  mutate(prop = as.character(round(prop, 2)))
+
+ggplot(pf.m, aes(party.fam, fill = reorder(dims, N), label = prop)) +
   geom_bar(aes(y = N), stat = "identity", position = "fill") +
-  facet_wrap(year.trend~country, scales = "free") +
-  labs(title = "Images per party family, by country", x = "Party family", y = NULL) +
+  geom_text(aes(y = N, label = paste0(prop, "%")), size = 3.5, position = position_fill(vjust = 0.2)) +
+  facet_wrap(.~country, scales = "free") +
+  labs(title = "Images per party family, by country", x = NULL, y = NULL) +
   theme_light(base_size = 10) +
-  theme(axis.text.x=element_text(angle=30,hjust=1)) +
-  theme(plot.margin=unit(c(1,1,1,1),"cm")) +
+  theme(axis.text.x=element_text(angle=30,hjust=1),
+        plot.margin=unit(c(1,1,1,1),"cm"),
+        legend.position = "top") +
+  scale_fill_manual(values = plot.colors, name = NULL) +
   labs(caption = "N: 14463")
 
 ##Document type
