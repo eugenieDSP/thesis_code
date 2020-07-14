@@ -94,25 +94,39 @@ ggplot(pf.m, aes(party.fam, fill = reorder(dims, N), label = prop)) +
 
 ##Document type
 
-doc.ds2 <- grouped.ds2 %>%
-  group_by(country, year.trend, dims, DOC.type) %>%
-  summarise(N = n()) %>%
-  arrange(desc(DOC.type, N))
-attributes(doc.ds2$DOC.type)
+doc.ds2 <- dataset2 %>%
+  dplyr::select(country, year.trend, dims, doctype) %>%
+  group_by(country, year.trend, dims, doctype) %>%
+  summarise(N = n())
 
+attributes(doc.ds2$doctype)
 
-doc.ds2$DOC.type <- unfactor(doc.ds2$DOC.type)
-str(doc.ds2$DOC.type)
-doc.ds2$DOC.type <- as.numeric(doc.ds2$DOC.type)
-doc.ds2$DOC.type <- factor(doc.ds2$DOC.type, levels = c("Manifesto", "Press releases"), labels = c("Manifesto", "Press releases"))
+#Fix factor levels
+doc.ds2$doctype <- unfactor(doc.ds2$doctype)
+str(doc.ds2$doctype)
+doc.ds2$doctype <- as.numeric(doc.ds2$doctype)
+doc.ds2$doctype <- factor(doc.ds2$doctype, levels = c(1, 2), labels = c("Manifesto", "Press releases"))
+str(doc.ds2$doctype)
 
-ggplot(doc.ds2, aes(DOC.type, fill = reorder(dims, N))) +
+# Percentage dataframe
+doc.perc <- doc.ds2 %>%
+  group_by(country, year.trend, doctype) %>%
+  summarise(nsum = sum(N))
+
+doc.merged <- inner_join(doc.ds2, doc.perc, by = c("country", "doctype", "year.trend")) %>%
+  mutate(prop = N/nsum*100) %>%
+  mutate(prop = as.character(round(prop, 2)))
+
+# Plot
+ggplot(doc.merged, aes(doctype, fill = reorder(dims, N), label = prop)) +
   geom_bar(aes(y = N), stat = "identity", position = "fill") +
-  facet_wrap(country~., scales = "free") +
-  scale_fill_manual(values = cbp1, name = "Image dimension") +
-  labs(title = "Images per document type, by country", x = "Document type", y = NULL) +
-  theme_light(base_size = 10) +
-  theme(plot.margin=unit(c(1,1,1,1),"cm")) +
+  geom_text(aes(y = N, label = paste0(prop, "%")), size = 3.5, position = position_fill(vjust = 0.2)) +
+  facet_wrap(country~year.trend, scales = "free") +
+  scale_fill_manual(values = plot.colors, name = NULL) +
+  labs(title = "Images per document type, by country and elections", x = NULL, y = NULL) +
+  theme_bw(base_size = 10) +
+  theme(plot.margin=unit(c(1,1,1,1),"cm"),
+        legend.position = "top") +
   labs(caption = "N: 14463")
 
 ##Two-dimensional positions
@@ -121,7 +135,8 @@ ggplot(dataset2, aes(lrecon, galtan, color = country)) +
   scale_x_continuous(limits = c(0, 10)) +
   scale_y_continuous(limits = c(0,10)) +
   geom_segment(aes(x = 0, y = 5, xend = 10, yend = 5), color = "gray60") +
-  geom_segment(aes(x = 5, y = 0, xend = 5, yend = 10), color = "gray60")
+  geom_segment(aes(x = 5, y = 0, xend = 5, yend = 10), color = "gray60") +
+  theme_bw()
 
 ## Image category and dimension plots - the ones that disappeared T_T
 
@@ -171,7 +186,7 @@ merged.dims <- inner_join(abs.dims, sum.dims, by = c("party", "country")) %>%
 merged.dims$prop<- round(merged.dims$prop, digits = 2)
 merged.dims <- merged.dims %>% mutate(prop = as.character(prop))
 
-ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)) +
+rel_plot <- ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)) +
   geom_bar(stat = "identity", position = "fill") +
   facet_wrap(.~country, scales = "free") +
   geom_text(aes(label = paste0(prop, "%")), size = 3.5, position = position_fill(vjust = 0.5)) +
@@ -182,3 +197,12 @@ ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)) +
        caption = "N: 14463") +
   theme_bw() +
   theme(legend.position = "top")
+
+### Plots by image dimensions, relative (percentages) frequencies
+## Personal characteristics
+
+## Professional qualities
+
+## Core political values
+
+## Group representation
