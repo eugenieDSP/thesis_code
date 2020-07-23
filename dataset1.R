@@ -6,6 +6,11 @@ path <- "C:/Users/Evgeniya Shtyrkova/Documents/MEGA/PhD Thesis/Data/dataset1_v2.
 dataset1 <- read.dta13(path, nonint.factors = T, generate.factors = T, convert.factors = T, convert.underscore = T)
 
 glimpse(dataset1)
+dataset1 %>%
+  group_by(country, party, year.trend) %>%
+  summarise(mean(polarity))
+
+
 
 ds1 <- dataset1 %>%
   dplyr::select(count, year, country, party, doctype, year.trend, issue.topic, issue.dum, Iss.subtopic, party.size, niche, incumb,
@@ -19,10 +24,11 @@ ds1 <- ds1 %>% mutate(issue.dum = as.factor(issue.dum), sact.ind = as.factor(sac
 glimpse(ds1)
 levels(ds1$party.fam)
 
-ds1 %>%
-  group_by(party)%>%
-  summarise(n = n())
-
+mean(ds1$polarity)
+sd(ds1$polarity)
+ds1 <- ds1 %>%
+  mutate(stdpol = scale(polarity, center = T, scale = T))
+glimpse(ds1$stdpol)
 
 ##Count plots###
 
@@ -37,24 +43,17 @@ p2 <- ggplot(subset(dataset1_selected, country == "Switzerland"), aes(count)) +
   facet_grid(party ~ year.trend, margins = T, scales = "free")
 
 ##Descriptive statistics##
-# Number of image occurrences in core sentences, by country and document type
-
-#Image count by country
-
-#Image count by election year and country
-
-#Image count by party and election year (relatively for each party)
-
-##Independent variables
-
-##Bivariate statistics: look for non-linear relationships
-CrossTable(ds1_z$image.freq, ds1_z$country, digits = 2, prop.chisq=F, format = "SPSS")
-
+# Mean and SD personalization
+mean(ds1$perso)
+sd(ds1$perso)
+# mean and SD fragmentation
+mean(ds1$fragm)
+sd(ds1$fragm)
 
 #Personalization-count
 dataset1_selected %>%
   filter(country == "Switzerland" & count != 0) %>%
-  ggplot(aes(x = perso, y = count, color = party1)) +
+  ggplot(aes(x = perso, y = count, color = party1)) + 
   geom_jitter() +
   scale_color_manual(values = cbp1)
 
@@ -264,27 +263,26 @@ country_plot1 <- plot(country_p1, connect.lines = T) +
   theme_bw()
 
 
-int_p1 <- ggpredict(model3, terms = c("year.trend", "stdsize [-2:2]"))
+int_p1 <- ggpredict(model3, terms = c("stdsize [-2:2]", "year.trend"))
 plot_int <- plot(int_p1, connect.lines =T)
 plot_int <- plot_int + theme_bw() +
   coord_cartesian(ylim = c(0, 0.8)) +
-  labs(x = "Election year",
+  labs(x = "Party size",
        y = "Count",
        title = "Predicted values of count",
        subtitle = "Electoral trend and party size") +
-  scale_color_npg(name = "Party size")
+  scale_color_npg(name = "Electoral year")
 
 # Some other ideas on models
 
-for4 <- count ~ niche + incumb + country + year.trend + stdfragm + stdperso + stdsize + stdlrpos + stdsize*year.trend + lrecon*galtan
+for4 <- count ~ niche + incumb + country + year.trend + stdfragm + stdperso + stdsize + stdlrpos + stdsize*stdlrpos
 model4 <- glm.nb(for4, data = ds1)
 tidied_model4 <- tidy(model4)
 (tidied_model4)
 summary(model4)
 plotreg(model4)
 
-int_pp1 <- ggpredict(model4, terms = c("lrecon[2:8]", "galtan[2:8]"))
-plot(int_pp1)
+
 
 ## Sentence level
 #dummify issues
@@ -338,3 +336,11 @@ tidied_model5 <- tidied_model5 %>%
   mutate(prob = sapply(estimate, logit2prob))
 no.issue.p <- ggpredict(model5, terms = "no.issue")
 plot(no.issue.p)
+
+size.df <- ds1 %>% dplyr::select(party, party.size, stdsize, year.trend) %>%
+  group_by(party, year.trend) %>%
+  summarise(mean_size = mean(party.size, na.rm = T), mean_sd = mean(stdsize))
+ggplot(size.df, aes(x = mean_size, y = mean_sd, color = party)) +
+  geom_text_repel(aes(label = party)) +
+  facet_grid(.~year.trend)
+  

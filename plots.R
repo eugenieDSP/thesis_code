@@ -156,7 +156,7 @@ abs.plot <- ggplot(abs.dims, aes(x = reorder(party, -N), y = N, fill = dims)) +
   geom_bar(stat = "identity") +
   facet_wrap(.~country, scales = "free")
 
-abs.plot <- abs.plot + geom_text(aes(label = N), size = 3, position = position_stack(vjust = 0.3))
+abs.plot <- abs.plot + geom_text(aes(label = N), size = 4, position = position_stack(vjust = 0.3))
  
 
 abs.plot <- abs.plot + geom_text(aes(x = reorder(party, -nsum),
@@ -175,7 +175,6 @@ abs.plot <- abs.plot + theme_bw() +
        caption = "N: 14463") +
   theme(legend.position = "top")
 
-abs.plot <- abs.plot + 
 
 #Overall plot, relative (%) frequencies
 #Prepare the table
@@ -183,7 +182,7 @@ merged.dims <- inner_join(abs.dims, sum.dims, by = c("party", "country")) %>%
   mutate(prop = N/nsum*100) %>%
   arrange(country, party, dims, prop)
  
-merged.dims$prop<- round(merged.dims$prop, digits = 2)
+merged.dims$prop<- round(merged.dims$prop, digits = 1)
 merged.dims <- merged.dims %>% mutate(prop = as.character(prop))
 
 rel_plot <- ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)) +
@@ -199,6 +198,21 @@ rel_plot <- ggplot(merged.dims, aes(x = party, y = N, fill = dims, label = prop)
   theme(legend.position = "top")
 
 ### Plots by image dimensions, relative (percentages) frequencies
+## Preparing the data for the plot
+
+p.dims <- dataset2 %>%
+  dplyr::select(country, party, dims, categories) %>%
+  group_by(country, party, dims, categories) %>%
+  summarise(N = n())
+
+sum.pdims <- p2.dims %>%
+  group_by(country, party, dims) %>%
+  summarise(nsum = sum(N))
+
+merged.pdims <- inner_join(p.dims, sum.pdims, by = c("party", "country", "dims")) %>%
+  mutate(prop = N/nsum*100) %>%
+  arrange(country, party, dims, prop)
+
 ## Personal characteristics
 
 ## Professional qualities
